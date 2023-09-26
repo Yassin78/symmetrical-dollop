@@ -1,14 +1,20 @@
-from create_knowledge_base import construct_base_from_directory
-from answer_questions import answer_question, answer_questions
+import data_loader
+import create_knowledge_base
+import game
+from character_creation import create_character  # Import the create_character function
 
-# construct_base_from_directory("data")
+if __name__ == "__main__":
+    # Load and store data from the Open5e API
+    data_loader.store_open5e_directory_data()
+    print("Data loaded and stored. Constructing the knowledge base...")
 
-response = answer_question("What is wu wei?")
-print(response)
+    # Construct the knowledge base
+    create_knowledge_base.construct_base_from_directory('data')
+    print("Knowledge base constructed")  # Debugging statement
 
-response = answer_question("What is the story of Butcher Ding?")
-print(response)
-response = answer_question("Who is Dan Shipper?")
-print(response)
+    character = create_character()
+    print("Character created:", character)  # Debugging statement
 
-# answer_questions() # <- use this if you want to chat back and forth with it in the console
+    print("Starting game...")
+    game.game_loop(character)
+
