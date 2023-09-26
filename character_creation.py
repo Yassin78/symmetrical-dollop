@@ -25,7 +25,7 @@ def ask_chatgpt(messages):
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
         headers=HEADERS,
-        json={"model": "gpt-3.5-turbo", "messages": messages}
+        json={"model": "gpt-4-turbo", "messages": messages}
     )
     response_data = response.json()
     if response.status_code != 200:
