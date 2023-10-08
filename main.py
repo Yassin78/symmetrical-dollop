@@ -1,21 +1,43 @@
+from create_knowledge_base import construct_base_from_directory
+from answer_questions import answer_question, answer_questions
 import data_loader
-import create_knowledge_base  # Import create_knowledge_base
+from langchain.agents import Tool
+from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.agents import initialize_agent
+from langchain import LLMMathChain
 
-if __name__ == "__main__":
-    # Load and store data from the Open5e API
-    data_loader.store_open5e_directory_data()
-    print("Data loaded and stored.")
+# construct_base_from_directory("data")
 
-    # Ensure the knowledge base is constructed
-    create_knowledge_base.construct_base_from_directory('data')
-    print("Knowledge base constructed")  # Debugging statement
 
-    # Now import game and character_creation
-    import game
-    from character_creation import create_character  # Import the create_character function
-    
-    character = create_character()
-    print("Character created:", character)  # Debugging statement
+llm = ChatOpenAI(temperature=0, model="gpt-4")
+llm_math = LLMMathChain.from_llm(llm)
 
-    print("Starting game...")
-    game.game_loop(character)
+tools = [
+  Tool(
+    name="DM Knowledge Base",
+    description=
+    "A tool that can provides that provides the data on all Dungeons & Dragons specific game rules and mechanics.",
+    func=answer_question,
+    return_direct=False),
+  Tool(
+    name="Calculator",
+    description=
+    "Useful for when you need to do math or calculate expressions. Please provide an expression.",
+    func=llm_math.run,
+    return_direct=True)
+]
+
+memory = ConversationBufferMemory(memory_key="chat_history")
+agent_chain = initialize_agent(tools,
+                               llm,
+                               agent="conversational-react-description",
+                               memory=memory,
+                               verbose=True)
+
+try:
+    while True:
+      message = input("> ")
+      output = agent_chain.run(input=message)
+except Exception as e:
+    print(f"An error occurred: {e}")
